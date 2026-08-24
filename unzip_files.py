@@ -1,5 +1,6 @@
 import zipfile
 import os
+import sys
 from pathlib import Path
 
 def unzip_file(zip_path, extract_to=None):
@@ -49,10 +50,12 @@ if __name__ == "__main__":
     # Check if file exists
     if os.path.exists(zip_file):
         # Extract to default location (creates folder with same name)
-        unzip_file(zip_file)
+        success = unzip_file(zip_file)
+        sys.exit(0 if success else 1)
     else:
         print(f"✗ Error: {zip_file} not found in current directory")
         print("\nAvailable files:")
         for file in os.listdir('.'):
             if file.endswith('.zip'):
                 print(f"  - {file}")
+        sys.exit(1)
