@@ -14,6 +14,11 @@ jobs:
       - name: Descompactar projeto
         run: unzip *.zip
 
+      - name: Corrigir plugin do Kotlin no build.gradle
+        run: |
+          cd VRBox_HOME_OS_FINAL_COMPLETE
+          sed -i '/org.jetbrains.kotlin.android/d' app/build.gradle
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
