@@ -1,4 +1,4 @@
-name: Build APK - Fixed
+name: Build APK
 
 on:
   workflow_dispatch:
@@ -11,13 +11,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
       - name: Descompactar projeto
-        run: python unzip_files.py
+        run: |
+          # Se houver um zip com o projeto, descompacta no runner
+          if ls *.zip 1> /dev/null 2>&1; then
+            unzip -o *.zip
+          fi
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -25,10 +24,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Gradle (versão estável 8.10.2)
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.10.2'
+      - name: Garantir versão do Gradle compatível no wrapper (opcional)
+        run: |
+          # Se o projeto contém um gradle wrapper que aponta para uma versão não disponível (ex: 9.0), força para 8.7
+          if [ -f VRBox_HOME_OS_FINAL_COMPLETE/gradle/wrapper/gradle-wrapper.properties ]; then
+            sed -i 's#distributionUrl=.*#distributionUrl=https://services.gradle.org/distributions/gradle-8.7-bin.zip#g' VRBox_HOME_OS_FINAL_COMPLETE/gradle/wrapper/gradle-wrapper.properties
+          fi
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -57,16 +58,17 @@ jobs:
             chmod +x ./VRBox_HOME_OS_FINAL_COMPLETE/gradlew
           fi
 
-      - name: Build APK (assembleDebug)
+      - name: Compilar APK
         working-directory: VRBox_HOME_OS_FINAL_COMPLETE
         run: |
+          # Use o gradlew do projeto quando disponível (recomendado). Caso não exista, tenta usar gradle do sistema.
           if [ -f ./gradlew ]; then
             ./gradlew assembleDebug --no-daemon
           else
             gradle --no-daemon assembleDebug
           fi
 
-      - name: Upload APK pronto
+      - name: Salvar APK pronto
         uses: actions/upload-artifact@v4
         with:
           name: VRBox-Home-APK
