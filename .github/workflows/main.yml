@@ -14,12 +14,11 @@ jobs:
       - name: Descompactar projeto
         run: unzip *.zip
 
-      - name: Limpar travas de versao e plugins antigos
+      - name: Forçar compatibilidade de versao do Gradle
         run: |
           cd VRBox_HOME_OS_FINAL_COMPLETE
-          # Remove checagens rígidas de versão do AGP/Kotlin se existirem nos arquivos build.gradle
-          find . -name "build.gradle" -exec sed -i '/org.jetbrains.kotlin.android/d' {} +
-          find . -name "build.gradle.kts" -exec sed -i '/org.jetbrains.kotlin.android/d' {} +
+          # Atualiza o wrapper para uma versão compatível ou desativa a checagem rígida
+          sed -i 's/distributionUrl=.*/distributionUrl=https\\://services.gradle.org/distributions/gradle-8.12.1-bin.zip/g' gradle/wrapper/gradle-wrapper.properties || true
 
       - uses: actions/setup-java@v4
         with:
@@ -28,17 +27,17 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.7'
+          gradle-version: '8.12.1'
 
       - uses: android-actions/setup-android@v3
 
       - name: Instalar SDK
         run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018"
 
-      - name: Compilar APK (ignorando warnings de depreciação)
+      - name: Compilar APK
         run: |
           cd VRBox_HOME_OS_FINAL_COMPLETE
-          gradle --no-daemon assembleDebug --warning-mode=all
+          gradle --no-daemon assembleDebug
 
       - name: Salvar APK pronto
         uses: actions/upload-artifact@v4
