@@ -22,6 +22,14 @@ def unzip_file(zip_path, extract_to=None):
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(extract_to)
         print(f"✓ Successfully extracted '{zip_path}' to '{extract_to}'")
+        print(f"\nContents of {extract_to}:")
+        for root, dirs, files in os.walk(extract_to):
+            level = root.replace(extract_to, '').count(os.sep)
+            indent = ' ' * 2 * level
+            print(f'{indent}{os.path.basename(root)}/')
+            subindent = ' ' * 2 * (level + 1)
+            for file in files:
+                print(f'{subindent}{file}')
         return True
     except FileNotFoundError:
         print(f"✗ Error: File '{zip_path}' not found")
@@ -33,13 +41,18 @@ def unzip_file(zip_path, extract_to=None):
         print(f"✗ Error extracting zip file: {e}")
         return False
 
-# Example usage
+# Main execution
 if __name__ == "__main__":
     # Unzip the VRBox file
     zip_file = "VRBox_HOME_OS_FINAL_COMPLETE_BUILD_FIXED_V3.zip"
     
-    # Option 1: Extract to default location (creates folder with same name)
-    unzip_file(zip_file)
-    
-    # Option 2: Extract to specific directory
-    # unzip_file(zip_file, extract_to="./extracted_files")
+    # Check if file exists
+    if os.path.exists(zip_file):
+        # Extract to default location (creates folder with same name)
+        unzip_file(zip_file)
+    else:
+        print(f"✗ Error: {zip_file} not found in current directory")
+        print("\nAvailable files:")
+        for file in os.listdir('.'):
+            if file.endswith('.zip'):
+                print(f"  - {file}")
