@@ -25,16 +25,14 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK (cmdline tools + platform)
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-        # inputs below are optional for the action; they request the SDK/NDK/build-tools needed
         with:
           api-level: 36
           build-tools: '36.0.0'
           ndk: '27.2.12479018'
 
       - name: Accept SDK licenses
-        # sdkmanager should be on PATH after setup-android; accept licenses to avoid interactive prompt
         run: |
           yes | sdkmanager --licenses || true
 
@@ -57,11 +55,9 @@ jobs:
       - name: Build APK (assembleDebug)
         working-directory: VRBox_HOME_OS_FINAL_COMPLETE
         run: |
-          # Use Gradle wrapper from the project to ensure the right Gradle version
           if [ -f ./gradlew ]; then
             ./gradlew assembleDebug --no-daemon
           else
-            # fallback to system gradle if wrapper is missing
             gradle --no-daemon assembleDebug
           fi
 
