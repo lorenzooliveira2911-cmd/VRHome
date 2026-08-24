@@ -14,12 +14,6 @@ jobs:
       - name: Descompactar projeto
         run: unzip *.zip
 
-      - name: Forçar compatibilidade de versao do Gradle
-        run: |
-          cd VRBox_HOME_OS_FINAL_COMPLETE
-          # Atualiza o wrapper para uma versão compatível ou desativa a checagem rígida
-          sed -i 's/distributionUrl=.*/distributionUrl=https\\://services.gradle.org/distributions/gradle-8.12.1-bin.zip/g' gradle/wrapper/gradle-wrapper.properties || true
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -27,7 +21,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.12.1'
+          gradle-version: '9.0'
 
       - uses: android-actions/setup-android@v3
 
@@ -37,7 +31,8 @@ jobs:
       - name: Compilar APK
         run: |
           cd VRBox_HOME_OS_FINAL_COMPLETE
-          gradle --no-daemon assembleDebug
+          # Usa a versão 9.0 instalada pelo action explicitamente sem depender do gradle global antigo
+          gradle-9.0 assembleDebug || gradle assembleDebug
 
       - name: Salvar APK pronto
         uses: actions/upload-artifact@v4
