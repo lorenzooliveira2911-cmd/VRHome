@@ -19,6 +19,14 @@ jobs:
       - name: Descompactar projeto
         run: python unzip_files.py
 
+      - name: Forçar versao compativel do Gradle no projeto
+        run: |
+          cd VRBox_HOME_OS_FINAL_COMPLETE
+          # Modifica o arquivo de propriedades do gradle dentro do projeto para usar a versão 8.7 de forma segura
+          if [ -f gradle/wrapper/gradle-wrapper.properties ]; then
+            sed -i 's/distributionUrl=.*/distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-bin.zip/g' gradle/wrapper/gradle-wrapper.properties
+          fi
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
