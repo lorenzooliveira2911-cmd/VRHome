@@ -14,10 +14,12 @@ jobs:
       - name: Descompactar projeto
         run: unzip *.zip
 
-      - name: Corrigir plugin do Kotlin no build.gradle
+      - name: Limpar travas de versao e plugins antigos
         run: |
           cd VRBox_HOME_OS_FINAL_COMPLETE
-          sed -i '/org.jetbrains.kotlin.android/d' app/build.gradle
+          # Remove checagens rígidas de versão do AGP/Kotlin se existirem nos arquivos build.gradle
+          find . -name "build.gradle" -exec sed -i '/org.jetbrains.kotlin.android/d' {} +
+          find . -name "build.gradle.kts" -exec sed -i '/org.jetbrains.kotlin.android/d' {} +
 
       - uses: actions/setup-java@v4
         with:
@@ -26,17 +28,17 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 'wrapper'
+          gradle-version: '9.5'
 
       - uses: android-actions/setup-android@v3
 
       - name: Instalar SDK
         run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018"
 
-      - name: Compilar APK
+      - name: Compilar APK (ignorando warnings de depreciação)
         run: |
           cd VRBox_HOME_OS_FINAL_COMPLETE
-          gradle --no-daemon assembleDebug
+          gradle --no-daemon assembleDebug --warning-mode=all
 
       - name: Salvar APK pronto
         uses: actions/upload-artifact@v4
