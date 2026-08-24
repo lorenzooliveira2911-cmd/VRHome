@@ -1,0 +1,40 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Descompactar projeto
+        run: unzip *.zip
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.5'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Instalar SDK
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018"
+
+      - name: Compilar APK
+        run: |
+          cd VRBox_HOME_OS_FINAL_COMPLETE
+          gradle --no-daemon assembleDebug
+
+      - name: Salvar APK pronto
+        uses: actions/upload-artifact@v4
+        with:
+          name: VRBox-Home-APK
+          path: VRBox_HOME_OS_FINAL_COMPLETE/app/build/outputs/apk/debug/app-debug.apk
