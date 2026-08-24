@@ -1,4 +1,4 @@
-name: Build APK
+name: Build APK - Fixed
 
 on:
   workflow_dispatch:
@@ -11,11 +11,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Descompactar projeto
+      - name: Descompactar arquivo ZIP na marra
         run: |
-          # Se houver um zip com o projeto, descompacta no runner
-          if ls *.zip 1> /dev/null 2>&1; then
-            unzip -o *.zip
+          echo "Procurando arquivos ZIP..."
+          ls -la
+          # Descompacta qualquer arquivo .zip que encontrar na raiz
+          unzip -o "*.zip"
+          echo "Conteudo apos descompactar:"
+          ls -la
+
+      - name: Forçar versao compativel do Gradle no projeto
+        run: |
+          cd VRBox_HOME_OS_FINAL_COMPLETE
+          if [ -f gradle/wrapper/gradle-wrapper.properties ]; then
+            sed -i 's/distributionUrl=.*/distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-bin.zip/g' gradle/wrapper/gradle-wrapper.properties
           fi
 
       - name: Set up Java
@@ -23,13 +32,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-
-      - name: Garantir versão do Gradle compatível no wrapper (opcional)
-        run: |
-          # Se o projeto contém um gradle wrapper que aponta para uma versão não disponível (ex: 9.0), força para 8.7
-          if [ -f VRBox_HOME_OS_FINAL_COMPLETE/gradle/wrapper/gradle-wrapper.properties ]; then
-            sed -i 's#distributionUrl=.*#distributionUrl=https://services.gradle.org/distributions/gradle-8.7-bin.zip#g' VRBox_HOME_OS_FINAL_COMPLETE/gradle/wrapper/gradle-wrapper.properties
-          fi
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -58,17 +60,16 @@ jobs:
             chmod +x ./VRBox_HOME_OS_FINAL_COMPLETE/gradlew
           fi
 
-      - name: Compilar APK
+      - name: Build APK (assembleDebug)
         working-directory: VRBox_HOME_OS_FINAL_COMPLETE
         run: |
-          # Use o gradlew do projeto quando disponível (recomendado). Caso não exista, tenta usar gradle do sistema.
           if [ -f ./gradlew ]; then
             ./gradlew assembleDebug --no-daemon
           else
             gradle --no-daemon assembleDebug
           fi
 
-      - name: Salvar APK pronto
+      - name: Upload APK pronto
         uses: actions/upload-artifact@v4
         with:
           name: VRBox-Home-APK
